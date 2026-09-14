@@ -1,6 +1,12 @@
-import React from 'react';
+import React,{useState} from 'react';
 
 export default function ScanBox() {
+    const [url, setUrl] = React.useState("");
+
+  // Function to handle the button click
+  const handleScanClick = () => {
+    console.log(url);
+  };
   return (
     <section className="scan-box">
       <div className="scan-title">
