@@ -1,1 +1,209 @@
 @import "tailwindcss";
+
+/* -------------------------------------------------------------
+   1. Dynamic Theme Architecture (Variables)
+   ------------------------------------------------------------- */
+
+/* Default: SOC Obsidian (Dark) */
+:root,
+.theme-dark {
+  --bg-app: #07101d;
+  --bg-surface: #0e1726;
+  --bg-surface-elevated: #152238;
+  --border-app: #1e293b;
+  --border-subtle: #152238;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+  --ring-app: rgba(255, 255, 255, 0.05);
+  --grid-line: rgba(255, 255, 255, 0.03);
+}
+
+/* Midnight Navy */
+.theme-midnight {
+  --bg-app: #0a1526;
+  --bg-surface: #0f1d36;
+  --bg-surface-elevated: #162a4d;
+  --border-app: #1e3a8a;
+  --border-subtle: #172554;
+  --text-primary: #f8fafc;
+  --text-secondary: #93c5fd;
+  --text-muted: #60a5fa;
+  --card-shadow: 0 4px 20px -2px rgba(0, 10, 30, 0.6);
+  --ring-app: rgba(59, 130, 246, 0.15);
+  --grid-line: rgba(59, 130, 246, 0.04);
+}
+
+/* Linear / Stripe Enterprise Light Mode */
+.theme-light {
+  --bg-app: #f8fafc;                 /* Crisp Slate-50 canvas */
+  --bg-surface: #ffffff;             /* Pure White cards */
+  --bg-surface-elevated: #f1f5f9;    /* Slate-100 */
+  --border-app: #e2e8f0;             /* Slate-200 */
+  --border-subtle: #f1f5f9;          /* Slate-100 fine divider */
+  --text-primary: #0f172a;           /* Inky Slate-900 */
+  --text-secondary: #475569;         /* Slate-600 readable body */
+  --text-muted: #94a3b8;             /* Slate-400 */
+  --card-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+  --ring-app: rgba(15, 23, 42, 0.06);
+  --grid-line: rgba(15, 23, 42, 0.03);
+}
+
+/* -------------------------------------------------------------
+   2. Semantic Utility Mappings
+   ------------------------------------------------------------- */
+.bg-app { background-color: var(--bg-app); }
+.bg-surface { background-color: var(--bg-surface); }
+.bg-surface-elevated { background-color: var(--bg-surface-elevated); }
+.border-app { border-color: var(--border-app); }
+.border-subtle { border-color: var(--border-subtle); }
+.text-app-primary { color: var(--text-primary); }
+.text-app-secondary { color: var(--text-secondary); }
+.text-app-muted { color: var(--text-muted); }
+
+/* -------------------------------------------------------------
+   3. Subtle Cybernetic Grid Overlay
+   ------------------------------------------------------------- */
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+                    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* -------------------------------------------------------------
+   4. Custom Scrollbars (SOC Dark & Crisp Light)
+   ------------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.theme-dark ::-webkit-scrollbar-thumb,
+.theme-midnight ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+}
+.theme-dark ::-webkit-scrollbar-thumb:hover,
+.theme-midnight ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+.theme-light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+.theme-light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* -------------------------------------------------------------
+   5. Dynamic Micro-Interactions (Trending GitHub / Vercel style)
+   ------------------------------------------------------------- */
+.btn-interactive {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+
+.btn-interactive:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px -4px rgba(37, 99, 235, 0.35);
+}
+
+.btn-interactive:active {
+  transform: translateY(0.5px) scale(0.98);
+}
+
+.card-interactive {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease;
+  will-change: transform, box-shadow;
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px);
+}
+
+/* -------------------------------------------------------------
+   6. Keyframe Animations
+   ------------------------------------------------------------- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes scanline {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 100%;
+  }
+}
+
+.scanning-pulse {
+  animation: scanline 8s linear infinite;
+}
+
+/* -------------------------------------------------------------
+   7. Trending Dynamic Effects (Spotlight & Shimmer)
+   ------------------------------------------------------------- */
+
+/* Shimmer Wave for live scanning status */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(59, 130, 246, 0.15) 20%,
+    rgba(59, 130, 246, 0.3) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 2.2s infinite;
+}
+
+/* Light mode shimmer tint */
+.theme-light .animate-shimmer::after {
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(37, 99, 235, 0.08) 20%,
+    rgba(37, 99, 235, 0.15) 60%,
+    rgba(255, 255, 255, 0)
+  );
+}
