@@ -1,85 +1,83 @@
 import React from 'react';
 
 export default function DashboardGrid() {
+  const recentScans = [
+    { target: 'api.example.com', time: '20 mins ago', badge: 'Critical', badgeColor: 'bg-[#4b1d25] text-[#ff5b65]' },
+    { target: 'auth.client-portal.io', time: '2 hours ago', badge: 'High', badgeColor: 'bg-[#4b2b16] text-[#ff9b45]' },
+    { target: 'staging.testnet.org', time: 'Yesterday', badge: 'Medium', badgeColor: 'bg-[#494014] text-[#e9c72f]' },
+  ];
 
-    
   return (
-    <section className="dashboard-grid">
-      {/* Severity */}
-      <div className="card severity-card">
-        <div className="card-header">
-          <h2>Vulnerability Severity</h2>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+      {/* Severity Breakdown */}
+      <div className="bg-[#0b1727] border border-[#1a2b40] rounded-xl p-5 sm:p-6">
+        <div className="flex justify-between items-center mb-5">
+          <h2 className="text-base font-semibold text-white">Severity Breakdown</h2>
+          <span className="text-xs text-[#3c8cff] cursor-pointer hover:underline">View Breakdown</span>
         </div>
 
-        <div className="severity-content">
-          <div className="circle-chart">
-            <div>
-              <strong>28</strong>
-              <span>Total</span>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-8 py-3">
+          {/* Conic Gradient Donut Chart */}
+          <div
+            className="relative w-36 h-36 rounded-full flex items-center justify-center"
+            style={{
+              background: 'conic-gradient(#ef4444 0deg 64deg, #f97316 64deg 180deg, #eab308 180deg 308deg, #22c55e 308deg 360deg)'
+            }}
+          >
+            <div className="w-[102px] h-[102px] bg-[#0b1727] rounded-full flex flex-col items-center justify-center">
+              <strong className="text-2xl font-bold text-white">50</strong>
+              <span className="text-xs text-[#8492a6]">Issues</span>
             </div>
           </div>
 
-          <div className="legend">
-            <div>
-              <span className="dot critical"></span>
-              Critical
-              <strong>5</strong>
+          {/* Legend */}
+          <div className="flex flex-col gap-3 text-sm">
+            <div className="flex items-center gap-2.5 w-32">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]"></span>
+              <span className="text-slate-300">Critical</span>
+              <strong className="ml-auto text-white">3</strong>
             </div>
-            <div>
-              <span className="dot high"></span>
-              High
-              <strong>9</strong>
+            <div className="flex items-center gap-2.5 w-32">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#f97316]"></span>
+              <span className="text-slate-300">High</span>
+              <strong className="ml-auto text-white">8</strong>
             </div>
-            <div>
-              <span className="dot medium"></span>
-              Medium
-              <strong>10</strong>
+            <div className="flex items-center gap-2.5 w-32">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#eab308]"></span>
+              <span className="text-slate-300">Medium</span>
+              <strong className="ml-auto text-white">15</strong>
             </div>
-            <div>
-              <span className="dot low"></span>
-              Low
-              <strong>4</strong>
+            <div className="flex items-center gap-2.5 w-32">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e]"></span>
+              <span className="text-slate-300">Low</span>
+              <strong className="ml-auto text-white">24</strong>
             </div>
           </div>
         </div>
       </div>
 
       {/* Recent Scans */}
-      <div className="card">
-        <div className="card-header">
-          <h2>Recent Scans</h2>
-          <a>View All</a>
+      <div className="bg-[#0b1727] border border-[#1a2b40] rounded-xl p-5 sm:p-6">
+        <div className="flex justify-between items-center mb-5">
+          <h2 className="text-base font-semibold text-white">Recent Scans</h2>
+          <span className="text-xs text-[#3c8cff] cursor-pointer hover:underline">All Scans</span>
         </div>
 
-        <div className="scan-history">
-          <div className="history-item">
-            <span>🌐</span>
-            <div>
-              <strong>example.com</strong>
-              <small>26 Aug 2026 • 11:45 AM</small>
+        <div className="flex flex-col gap-3">
+          {recentScans.map((item, idx) => (
+            <div key={idx} className="flex items-center gap-3 p-3 bg-[#081321] rounded-lg border border-[#142233]">
+              <span className="text-xl">🎯</span>
+              <div className="flex-1 min-w-0">
+                <strong className="block text-xs sm:text-sm text-white truncate">{item.target}</strong>
+                <small className="text-xs text-[#748399]">{item.time}</small>
+              </div>
+              <span className={`text-xs px-2.5 py-1 rounded-md font-semibold ${item.badgeColor}`}>
+                {item.badge}
+              </span>
             </div>
-            <b className="badge critical-bg">5 Critical</b>
-          </div>
-
-          <div className="history-item">
-            <span>🌐</span>
-            <div>
-              <strong>testsite.com</strong>
-              <small>24 Aug 2026 • 05:20 PM</small>
-            </div>
-            <b className="badge high-bg">3 High</b>
-          </div>
-
-          <div className="history-item">
-            <span>🌐</span>
-            <div>
-              <strong>demo.org</strong>
-              <small>22 Aug 2026 • 09:15 AM</small>
-            </div>
-            <b className="badge medium-bg">2 Medium</b>
-          </div>
+          ))}
         </div>
       </div>
-    </section>
+    </div>
   );
 }
