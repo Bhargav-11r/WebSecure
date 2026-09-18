@@ -15,7 +15,9 @@ export default function Sidebar({ activePage, setActivePage }) {
         <span className="text-3xl">⚡</span>
         <div className="hidden sm:block">
           <h2 className="text-lg font-bold text-white leading-tight">WebSecure</h2>
-          <p className="text-xs text-[#8492a6]">Security Suite</p>
+          <p className="text-[11px] text-[#8492a6] leading-tight mt-0.5">
+            Security analysis & suggestions
+          </p>
         </div>
       </div>
 
