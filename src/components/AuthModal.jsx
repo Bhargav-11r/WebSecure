@@ -1,146 +1,438 @@
 import React, { useState } from 'react';
 
-export default function AuthModal({ isOpen, onClose, onLogin }) {
+const API_BASE = 'http://localhost:8000';
+
+export default function AuthModal({
+  isOpen,
+  onClose,
+  onLogin,
+}) {
+  // =========================================================
+  // AUTH MODE
+  // =========================================================
+
   const [isRegisterMode, setIsRegisterMode] = useState(false);
-  const [email, setEmail] = useState('alex.vance@websecure.internal');
-  const [password, setPassword] = useState('••••••••••••');
-  const [displayName, setDisplayName] = useState('Alex Vance');
-  const [selectedRole, setSelectedRole] = useState('user'); // 'user' | 'admin'
 
-  if (!isOpen) return null;
+  // =========================================================
+  // FORM STATE
+  // =========================================================
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const finalName = displayName.trim() || (selectedRole === 'admin' ? 'Root Admin' : 'Security Analyst');
-    onLogin(selectedRole, email, finalName);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  // =========================================================
+  // UI STATE
+  // =========================================================
+
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // =========================================================
+  // RESET FORM
+  // =========================================================
+
+  const resetForm = () => {
+    setEmail('');
+    setPassword('');
+    setErrorMsg('');
+    setSuccessMsg('');
+    setIsSubmitting(false);
+  };
+
+  // =========================================================
+  // CLOSE MODAL
+  // =========================================================
+
+  const handleClose = () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    resetForm();
     onClose();
   };
 
-  const setDemoRole = (role) => {
-    setSelectedRole(role);
-    if (role === 'admin') {
-      setEmail('admin.root@websecure.internal');
-      setDisplayName('Marcus Croft (SecOps)');
-    } else {
-      setEmail('alex.vance@websecure.internal');
-      setDisplayName('Alex Vance (Analyst)');
+  // =========================================================
+  // SWITCH LOGIN / REGISTER MODE
+  // =========================================================
+
+  const switchMode = () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsRegisterMode((previous) => !previous);
+
+    setErrorMsg('');
+    setSuccessMsg('');
+    setPassword('');
+  };
+
+  // =========================================================
+  // FORM SUBMISSION
+  // =========================================================
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    // ---------------------------------------------------------
+    // BASIC FRONTEND VALIDATION
+    // ---------------------------------------------------------
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail || !password) {
+      setErrorMsg('Email and password are required.');
+      return;
+    }
+
+    if (!normalizedEmail.includes('@')) {
+      setErrorMsg('Please enter a valid email address.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // =======================================================
+      // REGISTER
+      // =======================================================
+
+      if (isRegisterMode) {
+        const registerResponse = await fetch(
+          `${API_BASE}/api/auth/register`,
+          {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: normalizedEmail,
+              password: password,
+            }),
+          }
+        );
+
+        const registerData = await registerResponse.json();
+
+        // -----------------------------------------------------
+        // REGISTRATION FAILED
+        // -----------------------------------------------------
+
+        if (!registerResponse.ok) {
+          throw new Error(
+            registerData.detail ||
+              'Unable to create the account.'
+          );
+        }
+
+        // =======================================================
+        // AUTOMATIC LOGIN AFTER REGISTRATION
+        // =======================================================
+
+        const loginResponse = await fetch(
+          `${API_BASE}/api/auth/login`,
+          {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: normalizedEmail,
+              password: password,
+            }),
+          }
+        );
+
+        const loginData = await loginResponse.json();
+
+        // -----------------------------------------------------
+        // AUTOMATIC LOGIN FAILED
+        // -----------------------------------------------------
+
+        if (!loginResponse.ok) {
+          throw new Error(
+            loginData.detail ||
+              'Account created, but automatic login failed.'
+          );
+        }
+
+        // -----------------------------------------------------
+        // LOGIN SUCCESSFUL
+        // -----------------------------------------------------
+
+        if (loginData.user) {
+          onLogin(loginData.user);
+        }
+
+        resetForm();
+        onClose();
+
+        return;
+      }
+
+      // =======================================================
+      // LOGIN
+      // =======================================================
+
+      const response = await fetch(
+        `${API_BASE}/api/auth/login`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: normalizedEmail,
+            password: password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      // -------------------------------------------------------
+      // LOGIN FAILED
+      // -------------------------------------------------------
+
+      if (!response.ok) {
+        throw new Error(
+          data.detail ||
+            'Invalid email or password.'
+        );
+      }
+
+      // -------------------------------------------------------
+      // LOGIN SUCCESSFUL
+      // -------------------------------------------------------
+
+      if (data.user) {
+        onLogin(data.user);
+      }
+
+      resetForm();
+      onClose();
+    } catch (error) {
+      console.error(
+        'Authentication error:',
+        error
+      );
+
+      setErrorMsg(
+        error.message ||
+          'Authentication request failed.'
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  // =========================================================
+  // MODAL NOT OPEN
+  // =========================================================
+
+  if (!isOpen) {
+    return null;
+  }
+
+  // =========================================================
+  // UI
+  // =========================================================
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4">
-      <div className="bg-[#091524] border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in">
-        {/* Header */}
-        <div className="p-5 border-b border-slate-800/80 flex items-center justify-between">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+
+      {/* =====================================================
+          MODAL CONTAINER
+      ====================================================== */}
+
+      <div className="w-full max-w-md bg-surface border border-app rounded-2xl shadow-2xl overflow-hidden">
+
+        {/* ===================================================
+            HEADER
+        ==================================================== */}
+
+        <div className="px-6 py-5 border-b border-app flex items-start justify-between">
+
           <div>
-            <h2 className="text-base font-bold text-white tracking-tight">
-              {isRegisterMode ? 'Register New WebSecure Account' : 'Access WebSecure Portal'}
+            <p className="text-[10px] uppercase tracking-[0.2em] text-app-muted font-mono">
+              WEBSECURE
+            </p>
+
+            <h2 className="mt-1 text-xl font-semibold text-app-primary">
+              {isRegisterMode
+                ? 'Create Account'
+                : 'Sign In'}
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              {isRegisterMode ? 'Provision role credentials' : 'Authenticate your analytical workstation'}
+
+            <p className="mt-1 text-xs text-app-secondary">
+              {isRegisterMode
+                ? 'Create your WebSecure security account.'
+                : 'Access your WebSecure security workspace.'}
             </p>
           </div>
+
           <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-white text-sm font-mono cursor-pointer px-2 py-1 rounded-lg hover:bg-slate-800"
+            type="button"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            className="text-app-muted hover:text-app-primary text-lg leading-none cursor-pointer disabled:opacity-40"
+            aria-label="Close authentication modal"
           >
             ✕
           </button>
+
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs">
-          {/* Quick 1-Click Role Selector */}
-          <div>
-            <label className="block text-slate-400 font-semibold mb-2 uppercase tracking-wider text-[10px]">
-              Preset Role Persona
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setDemoRole('user')}
-                className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
-                  selectedRole === 'user'
-                    ? 'border-blue-500 bg-blue-500/10 text-white shadow-sm shadow-blue-500/10'
-                    : 'border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700'
-                }`}
-              >
-                <div className="font-bold text-xs text-white mb-0.5">👤 Analyst</div>
-                <div className="text-[10px] text-slate-400 leading-tight">Triage, audits, mitigations</div>
-              </button>
+        {/* ===================================================
+            FORM
+        ==================================================== */}
 
-              <button
-                type="button"
-                onClick={() => setDemoRole('admin')}
-                className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
-                  selectedRole === 'admin'
-                    ? 'border-purple-500 bg-purple-500/10 text-white shadow-sm shadow-purple-500/10'
-                    : 'border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700'
-                }`}
-              >
-                <div className="font-bold text-xs text-purple-300 mb-0.5">🛡️ Administrator</div>
-                <div className="text-[10px] text-slate-400 leading-tight">Full engine & CLI sovereignty</div>
-              </button>
+        <form
+          onSubmit={handleSubmit}
+          className="px-6 py-6 space-y-5"
+        >
+
+          {/* =================================================
+              ERROR MESSAGE
+          ================================================== */}
+
+          {errorMsg && (
+            <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2.5">
+              <p className="text-xs text-red-400">
+                {errorMsg}
+              </p>
             </div>
-          </div>
+          )}
 
-          {/* User Name input (Visible during register or manual edit) */}
-          <div>
-            <label className="block text-slate-300 font-medium mb-1">Display Name</label>
-            <input
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="e.g. Alex Vance"
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:border-blue-500 outline-none"
-              required
-            />
-          </div>
+          {/* =================================================
+              SUCCESS MESSAGE
+          ================================================== */}
 
-          {/* Email input */}
+          {successMsg && (
+            <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2.5">
+              <p className="text-xs text-emerald-400">
+                {successMsg}
+              </p>
+            </div>
+          )}
+
+          {/* =================================================
+              EMAIL
+          ================================================== */}
+
           <div>
-            <label className="block text-slate-300 font-medium mb-1">Corporate Email</label>
+            <label
+              htmlFor="auth-email"
+              className="block mb-2 text-xs font-medium text-app-secondary"
+            >
+              Email address
+            </label>
+
             <input
+              id="auth-email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:border-blue-500 outline-none font-mono"
-              required
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
+              placeholder="you@example.com"
+              autoComplete="email"
+              disabled={isSubmitting}
+              className="w-full rounded-lg border border-app bg-app px-3 py-2.5 text-sm text-app-primary placeholder:text-app-muted outline-none focus:border-cyan-500 transition-colors disabled:opacity-50"
             />
           </div>
 
-          {/* Password input */}
+          {/* =================================================
+              PASSWORD
+          ================================================== */}
+
           <div>
-            <label className="block text-slate-300 font-medium mb-1">Password</label>
+            <label
+              htmlFor="auth-password"
+              className="block mb-2 text-xs font-medium text-app-secondary"
+            >
+              Password
+            </label>
+
             <input
+              id="auth-password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-slate-950/60 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:border-blue-500 outline-none font-mono"
-              required
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
+              placeholder="Enter your password"
+              autoComplete={
+                isRegisterMode
+                  ? 'new-password'
+                  : 'current-password'
+              }
+              disabled={isSubmitting}
+              className="w-full rounded-lg border border-app bg-app px-3 py-2.5 text-sm text-app-primary placeholder:text-app-muted outline-none focus:border-cyan-500 transition-colors disabled:opacity-50"
             />
           </div>
 
-          {/* Submit Button */}
+          {/* =================================================
+              SUBMIT BUTTON
+          ================================================== */}
+
           <button
             type="submit"
-            className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/20 cursor-pointer text-xs"
+            disabled={isSubmitting}
+            className="w-full rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-sm py-2.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isRegisterMode ? 'Create Account & Sign In' : `Sign In as ${selectedRole === 'admin' ? 'Administrator' : 'Security Analyst'}`}
+            {isSubmitting
+              ? isRegisterMode
+                ? 'Creating Account...'
+                : 'Signing In...'
+              : isRegisterMode
+                ? 'Create Account'
+                : 'Sign In'}
           </button>
 
-          {/* Mode Switcher */}
-          <div className="text-center pt-1 border-t border-slate-800/80">
+          {/* =================================================
+              MODE SWITCH
+          ================================================== */}
+
+          <div className="text-center pt-1">
+            <p className="text-xs text-app-secondary">
+              {isRegisterMode
+                ? 'Already have an account?'
+                : "Don't have an account?"}
+            </p>
+
             <button
               type="button"
-              onClick={() => setIsRegisterMode(!isRegisterMode)}
-              className="text-slate-400 hover:text-blue-400 text-[11px] font-medium transition-colors cursor-pointer"
+              onClick={switchMode}
+              disabled={isSubmitting}
+              className="mt-1 text-xs font-medium text-cyan-400 hover:text-cyan-300 cursor-pointer disabled:opacity-40"
             >
               {isRegisterMode
-                ? 'Already provisioned? Return to Sign In'
-                : "Need a new analyst login? Create account"}
+                ? 'Sign in'
+                : 'Create an account'}
             </button>
           </div>
+
         </form>
+
+        {/* ===================================================
+            SECURITY FOOTER
+        ==================================================== */}
+
+        <div className="px-6 py-4 border-t border-app bg-black/10">
+          <p className="text-[10px] text-app-muted text-center font-mono">
+            AUTHENTICATED SESSION • WEBSECURE
+          </p>
+        </div>
+
       </div>
     </div>
   );

@@ -1,13 +1,19 @@
 import React from 'react';
 
-export default function Sidebar({ activePage, setActivePage, currentTheme = 'dark' }) {
+export default function Sidebar({
+  activePage,
+  setActivePage,
+  currentTheme = 'dark',
+}) {
   const isLight = currentTheme === 'light';
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'scan', label: 'New Scan', icon: '🔍' },
+    { id: 'scan-history', label: 'Scan History', icon: '🕘' },
     { id: 'findings', label: 'Findings & CVEs', icon: '🛡️' },
     { id: 'mitigations', label: 'Mitigations', icon: '🔧' },
+    { id: 'suggestions', label: 'Suggestions', icon: '💡' },
     { id: 'settings', label: 'Settings', icon: '⚙️' },
   ];
 
@@ -25,11 +31,21 @@ export default function Sidebar({ activePage, setActivePage, currentTheme = 'dar
           <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-blue-500/20 shrink-0">
             ⚡
           </div>
+
           <div className="hidden sm:block overflow-hidden">
-            <h1 className={`text-base font-extrabold tracking-tight truncate ${isLight ? 'text-slate-900' : 'text-white'}`}>
+            <h1
+              className={`text-base font-extrabold tracking-tight truncate ${
+                isLight ? 'text-slate-900' : 'text-white'
+              }`}
+            >
               WebSecure
             </h1>
-            <p className={`text-[11px] truncate ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+
+            <p
+              className={`text-[11px] truncate ${
+                isLight ? 'text-slate-500' : 'text-slate-400'
+              }`}
+            >
               Security suggestions
             </p>
           </div>
@@ -39,6 +55,7 @@ export default function Sidebar({ activePage, setActivePage, currentTheme = 'dar
         <nav className="space-y-1">
           {navItems.map((item) => {
             const isActive = activePage === item.id;
+
             return (
               <button
                 key={item.id}
@@ -51,8 +68,13 @@ export default function Sidebar({ activePage, setActivePage, currentTheme = 'dar
                     : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
                 }`}
               >
-                <span className="text-sm shrink-0">{item.icon}</span>
-                <span className="hidden sm:inline truncate">{item.label}</span>
+                <span className="text-sm shrink-0">
+                  {item.icon}
+                </span>
+
+                <span className="hidden sm:inline truncate">
+                  {item.label}
+                </span>
               </button>
             );
           })}
@@ -60,14 +82,24 @@ export default function Sidebar({ activePage, setActivePage, currentTheme = 'dar
       </div>
 
       {/* Backend Status Footer */}
-      <div className={`p-3 rounded-xl border text-[11px] hidden sm:block ${
-        isLight ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-slate-900/50 border-slate-800 text-slate-400'
-      }`}>
+      <div
+        className={`p-3 rounded-xl border text-[11px] hidden sm:block ${
+          isLight
+            ? 'bg-slate-50 border-slate-200 text-slate-600'
+            : 'bg-slate-900/50 border-slate-800 text-slate-400'
+        }`}
+      >
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span className="font-semibold text-emerald-600">Engine Online</span>
+
+          <span className="font-semibold text-emerald-600">
+            Engine Online
+          </span>
         </div>
-        <p className="text-[10px] mt-1 text-slate-400 font-mono">FastAPI v1.0.0</p>
+
+        <p className="text-[10px] mt-1 text-slate-400 font-mono">
+          FastAPI v1.0.0
+        </p>
       </div>
     </aside>
   );
